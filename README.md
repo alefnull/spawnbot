@@ -9,6 +9,8 @@
 
 SpawnBot is a simple IRC<->Discord bridge bot built for [the spawn](https://thespawn.net) gaming community.
 
+<b>NOTE: Not intended for public use. This is a small project designed for our own specific use case, and is not set up for public use.</b>
+
 Made with :heart: by <a href="https://github.com/alefnull" target="_blank">alefnull</a>
 
 ## License ##
