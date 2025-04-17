@@ -109,44 +109,47 @@ func main() {
 			return
 		}
 
-		unprefixed, _ := strings.CutPrefix(event.Message.Content, "!")
-		if unprefixed == "die" {
-			irc_client.Quit("as you wish")
-			dis_client.Close(context.TODO())
-			os.Exit(0)
+		// if event.Message.ChannelID == BRINE_CHAN_ID {
+		if event.Message.ChannelID == SPAWN_CHAN_ID {
+			unprefixed, _ := strings.CutPrefix(event.Message.Content, "!")
+			if unprefixed == "die" {
+				irc_client.Quit("as you wish")
+				dis_client.Close(context.TODO())
+				os.Exit(0)
+			}
+
+			var author string = event.Message.Author.Username
+			var content string = event.Message.Content
+
+			// if len(event.Message.Attachments) > 0 {
+			// 	var atts_string string
+			// 	for _, att := range event.Message.Attachments {
+			// 		atts_string = fmt.Sprintf("%s %s", atts_string, att.URL)
+			// 	}
+
+			// 	content += " " + atts_string
+			// }
+
+			// for _, mention := range event.Message.Mentions {
+			// 	if strings.Contains(content, mention.ID.String()) {
+			// 		content = strings.Replace(content, mention.ID.String(), mention.Username, 1)
+			// 	}
+			// }
+
+			//         /## /##                 /##          /##
+			//        | ##|__/                |  ##        |__/
+			//    /####### /##  /#######       \  ##        /##  /######   /#######
+			//   /##__  ##| ## /##_____/        \  ##      | ## /##__  ## /##_____/
+			//  | ##  | ##| ##|  ######          /##/      | ##| ##  \__/| ##
+			//  | ##  | ##| ## \____  ##        /##/       | ##| ##      | ##
+			//  |  #######| ## /#######/       /##/        | ##| ##      |  #######
+			//   \_______/|__/|_______/       |__/         |__/|__/       \_______/
+			message := fmt.Sprintf("[DISCORD] %s: %s", author, content)
+
+			irc_client.Cmd.Message("#spawn", message)
+			// irc_client.Cmd.Message("#spawnbot", message)
+			slog.Info(message)
 		}
-
-		var author string = event.Message.Author.Username
-		var content string = event.Message.Content
-
-		// if len(event.Message.Attachments) > 0 {
-		// 	var atts_string string
-		// 	for _, att := range event.Message.Attachments {
-		// 		atts_string = fmt.Sprintf("%s %s", atts_string, att.URL)
-		// 	}
-
-		// 	content += " " + atts_string
-		// }
-
-		// for _, mention := range event.Message.Mentions {
-		// 	if strings.Contains(content, mention.ID.String()) {
-		// 		content = strings.Replace(content, mention.ID.String(), mention.Username, 1)
-		// 	}
-		// }
-
-		//         /## /##                 /##          /##
-		//        | ##|__/                |  ##        |__/
-		//    /####### /##  /#######       \  ##        /##  /######   /#######
-		//   /##__  ##| ## /##_____/        \  ##      | ## /##__  ## /##_____/
-		//  | ##  | ##| ##|  ######          /##/      | ##| ##  \__/| ##
-		//  | ##  | ##| ## \____  ##        /##/       | ##| ##      | ##
-		//  |  #######| ## /#######/       /##/        | ##| ##      |  #######
-		//   \_______/|__/|_______/       |__/         |__/|__/       \_______/
-		message := fmt.Sprintf("[DISCORD] %s: %s", author, content)
-
-		irc_client.Cmd.Message("#spawn", message)
-		// irc_client.Cmd.Message("#spawnbot", message)
-		slog.Info(message)
 	}))
 
 	//   /##                           /##                /## /##
