@@ -153,7 +153,6 @@ func main() {
 	//  | ##| ##      |  #######       /##/        |  #######| ## /#######/
 	//  |__/|__/       \_______/      |__/          \_______/|__/|_______/
 	irc_client.Handlers.Add(girc.PRIVMSG, func(c *girc.Client, e girc.Event) {
-		// slog.Debug(fmt.Sprintf("[%s] %s: %s", e.Params[0], e.Source.Name, e.Last()))
 		username := e.Source.Name
 		message := e.Last()
 
