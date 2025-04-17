@@ -48,6 +48,7 @@ func main() {
 	irc_client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
 		c.Cmd.Join("#spawn")
 		// c.Cmd.Join("#spawnbot")
+		slog.Info("[IRC] Connected to " + c.Config.Server)
 	})
 
 	cmdHandler, cmd_err := cmdhandler.New("!")
@@ -86,6 +87,7 @@ func main() {
 	//  | #######/ /######|  ######/|  ######/|  ######/| ##  | ##| #######/
 	//  |_______/ |______/ \______/  \______/  \______/ |__/  |__/|_______/
 	// =============================================================================================
+	slog.Info("[DISCORD] Connecting to gateway...")
 	dis_client, dis_err := disgo.New(os.Getenv("SPAWNBOT_TOKEN"),
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
@@ -99,6 +101,8 @@ func main() {
 		panic(dis_err)
 	}
 	defer dis_client.Close(context.TODO())
+
+	slog.Info("[DISCORD] Connected")
 
 	dis_client.AddEventListeners(bot.NewListenerFunc(func(event *events.MessageCreate) {
 		if event.Message.Author.Bot {
@@ -142,6 +146,7 @@ func main() {
 
 		irc_client.Cmd.Message("#spawn", message)
 		// irc_client.Cmd.Message("#spawnbot", message)
+		slog.Info(message)
 	}))
 
 	//   /##                           /##                /## /##
@@ -154,18 +159,21 @@ func main() {
 	//  |__/|__/       \_______/      |__/          \_______/|__/|_______/
 	irc_client.Handlers.Add(girc.PRIVMSG, func(c *girc.Client, e girc.Event) {
 		username := e.Source.Name
-		message := e.Last()
+		content := e.Last()
+		message := fmt.Sprintf("[IRC] %s: %s", username, content)
 
-		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[IRC] %s: %s", username, message)).Build())
-		// _, dis_err = dis_client.Rest().CreateMessage(BRINE_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[IRC] %s: %s", username, message)).Build())
+		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(message).Build())
+		// _, dis_err = dis_client.Rest().CreateMessage(BRINE_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(message).Build())
 
 		if dis_err != nil {
-			slog.Error("errors while sending message to discord", slog.Any("err", dis_err))
+			slog.Error("[DISCORD] Errors while sending message to discord", slog.Any("err", dis_err))
+		} else {
+			slog.Info(message)
 		}
 	})
 
 	if dis_err = dis_client.OpenGateway(context.TODO()); dis_err != nil {
-		slog.Error("errors while connecting to gateway", slog.Any("err", dis_err))
+		slog.Error("[DISCORD] Errors while connecting to gateway", slog.Any("err", dis_err))
 		return
 	}
 
@@ -179,11 +187,12 @@ func main() {
 	//  | ##  | ##| ########|  ######/|  ######/| ## \  ##| ## \  ##| ########|  ######/   | ##
 	//  |__/  |__/|________/ \______/  \______/ |__/  \__/|__/  \__/|________/ \______/    |__/
 	// =============================================================================================
+	slog.Info("[IRC] Connecting to server...")
 	for {
 		if err := irc_client.Connect(); err != nil {
 			slog.Error(err.Error())
 
-			slog.Info("reconnecting in 30 seconds...")
+			slog.Info("[IRC] Reconnecting in 30 seconds...")
 			time.Sleep(30 * time.Second)
 		} else {
 			return
