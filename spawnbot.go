@@ -138,7 +138,7 @@ func main() {
 		//  | ##  | ##| ## \____  ##        /##/       | ##| ##      | ##
 		//  |  #######| ## /#######/       /##/        | ##| ##      |  #######
 		//   \_______/|__/|_______/       |__/         |__/|__/       \_______/
-		message := fmt.Sprintf("[%s (discord)]: %s", author, content)
+		message := fmt.Sprintf("[DISCORD] %s: %s", author, content)
 
 		irc_client.Cmd.Message("#spawn", message)
 		// irc_client.Cmd.Message("#spawnbot", message)
@@ -157,8 +157,8 @@ func main() {
 		username := e.Source.Name
 		message := e.Last()
 
-		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[%s (irc)]: %s", username, message)).Build())
-		// _, dis_err = dis_client.Rest().CreateMessage(BRINE_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[%s (irc)]: %s", username, message)).Build())
+		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[IRC] %s: %s", username, message)).Build())
+		// _, dis_err = dis_client.Rest().CreateMessage(BRINE_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(fmt.Sprintf("[IRC] %s: %s", username, message)).Build())
 
 		if dis_err != nil {
 			slog.Error("errors while sending message to discord", slog.Any("err", dis_err))
