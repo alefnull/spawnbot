@@ -115,20 +115,20 @@ func main() {
 		var author string = event.Message.Author.Username
 		var content string = event.Message.Content
 
-		if len(event.Message.Attachments) > 0 {
-			var atts_string string
-			for _, att := range event.Message.Attachments {
-				atts_string = fmt.Sprintf("%s %s", atts_string, att.URL)
-			}
+		// if len(event.Message.Attachments) > 0 {
+		// 	var atts_string string
+		// 	for _, att := range event.Message.Attachments {
+		// 		atts_string = fmt.Sprintf("%s %s", atts_string, att.URL)
+		// 	}
 
-			content += " " + atts_string
-		}
+		// 	content += " " + atts_string
+		// }
 
-		for _, mention := range event.Message.Mentions {
-			if strings.Contains(content, mention.ID.String()) {
-				content = strings.Replace(content, mention.ID.String(), mention.Username, 1)
-			}
-		}
+		// for _, mention := range event.Message.Mentions {
+		// 	if strings.Contains(content, mention.ID.String()) {
+		// 		content = strings.Replace(content, mention.ID.String(), mention.Username, 1)
+		// 	}
+		// }
 
 		//         /## /##                 /##          /##
 		//        | ##|__/                |  ##        |__/
