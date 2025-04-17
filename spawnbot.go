@@ -19,7 +19,7 @@ import (
 )
 
 // TODO MARK: define Servers / Channels to echo with
-// Herobrine's Cave : #general
+// Herobrine's Cave : #dev
 const BRINE_CHAN_ID = snowflake.ID(1226973379303706768)
 
 // The Spawn : #spawn
