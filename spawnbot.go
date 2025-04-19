@@ -46,9 +46,12 @@ func main() {
 	})
 
 	irc_client.Handlers.Add(girc.CONNECTED, func(c *girc.Client, e girc.Event) {
+		c.Cmd.Message("q@CServe.quakenet.org", fmt.Sprintf("AUTH SpawnBot %s", os.Getenv("QNET_AUTH")))
+		c.Cmd.Mode("SpawnBot", "+x")
+		time.Sleep(time.Second)
 		c.Cmd.Join("#spawn")
 		// c.Cmd.Join("#spawnbot")
-		slog.Info("[IRC] Connected to " + c.Config.Server)
+		// slog.Info("[IRC] Connected to " + c.Config.Server)
 	})
 
 	cmdHandler, cmd_err := cmdhandler.New("!")
@@ -66,17 +69,6 @@ func main() {
 		},
 	})
 
-	cmdHandler.Add(&cmdhandler.Command{
-		Name:    "die",
-		Help:    "Forces the bot to quit.",
-		MinArgs: 0,
-		Fn: func(c *girc.Client, input *cmdhandler.Input) {
-			c.Quit("as you wish")
-		},
-	})
-
-	irc_client.Handlers.AddHandler(girc.PRIVMSG, cmdHandler)
-
 	// =============================================================================================
 	//   /#######  /######  /######   /######   /######  /#######  /#######
 	//  | ##__  ##|_  ##_/ /##__  ## /##__  ## /##__  ##| ##__  ##| ##__  ##
@@ -87,7 +79,7 @@ func main() {
 	//  | #######/ /######|  ######/|  ######/|  ######/| ##  | ##| #######/
 	//  |_______/ |______/ \______/  \______/  \______/ |__/  |__/|_______/
 	// =============================================================================================
-	slog.Info("[DISCORD] Connecting to gateway...")
+	// slog.Info("[DISCORD] Connecting to gateway...")
 	dis_client, dis_err := disgo.New(os.Getenv("SPAWNBOT_TOKEN"),
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
@@ -102,7 +94,22 @@ func main() {
 	}
 	defer dis_client.Close(context.TODO())
 
-	slog.Info("[DISCORD] Connected")
+	// slog.Info("[DISCORD] Connected")
+
+	// Sneaky command handler in discord section because we need access to dis_client
+	cmdHandler.Add(&cmdhandler.Command{
+		Name:    "die",
+		Help:    "Forces the bot to quit.",
+		MinArgs: 0,
+		Fn: func(c *girc.Client, input *cmdhandler.Input) {
+			dis_client.Close(context.TODO())
+			c.Quit("as you wish")
+			time.Sleep(time.Second)
+			os.Exit(0)
+		},
+	})
+
+	irc_client.Handlers.Add(girc.PRIVMSG, cmdHandler.Execute)
 
 	dis_client.AddEventListeners(bot.NewListenerFunc(func(event *events.MessageCreate) {
 		if event.Message.Author.Bot {
@@ -115,6 +122,7 @@ func main() {
 			if unprefixed == "die" {
 				irc_client.Quit("as you wish")
 				dis_client.Close(context.TODO())
+				time.Sleep(time.Second)
 				os.Exit(0)
 			}
 
@@ -148,7 +156,7 @@ func main() {
 
 			irc_client.Cmd.Message("#spawn", message)
 			// irc_client.Cmd.Message("#spawnbot", message)
-			slog.Info(message)
+			// slog.Info(message)
 		}
 	}))
 
@@ -165,8 +173,8 @@ func main() {
 		content := e.Last()
 		message := fmt.Sprintf("[IRC] %s: %s", username, content)
 
-		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(message).Build())
 		// _, dis_err = dis_client.Rest().CreateMessage(BRINE_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(message).Build())
+		_, dis_err = dis_client.Rest().CreateMessage(SPAWN_CHAN_ID, discord.NewMessageCreateBuilder().SetContent(message).Build())
 
 		if dis_err != nil {
 			slog.Error("[DISCORD] Errors while sending message to discord", slog.Any("err", dis_err))
@@ -190,7 +198,7 @@ func main() {
 	//  | ##  | ##| ########|  ######/|  ######/| ## \  ##| ## \  ##| ########|  ######/   | ##
 	//  |__/  |__/|________/ \______/  \______/ |__/  \__/|__/  \__/|________/ \______/    |__/
 	// =============================================================================================
-	slog.Info("[IRC] Connecting to server...")
+	// slog.Info("[IRC] Connecting to server...")
 	for {
 		if err := irc_client.Connect(); err != nil {
 			slog.Error(err.Error())
